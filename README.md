@@ -28,6 +28,52 @@ Validates model accuracy by comparing bounding box predictions against hand-coun
 
 Generates supplemental figures summarizing model training and selection. Reads TensorBoard training logs from `data/model_training_tensorboard/` and ground truth/prediction files from `data/model_ground_truth/` and `data/model_predictions/`. Produces three figures: (A) a dot plot comparing validation accuracy between models trained on individual cameras vs. both cameras combined, (B) training loss/mAP/recall and combined optimization score over training steps for the combined-camera model, and (C) r-squared vs. confidence threshold for the combined-camera all-classes model on the training set. Writes figures to `plots/model_training_metrics/`.
 
+## Data
+
+Several data files are required to run the scripts but are not stored in this repository due to file size. Download the data archive from [link TBD] and place the contents so that your repository root contains the following structure:
+
+```
+data/
+├── model_predictions/
+│   ├── 2023-06-23_all_tracks_bug_fix.txt
+│   ├── 2023-11-01_all_tracks.txt
+│   ├── combined_all_train_one_predictions.tsv
+│   ├── combined_all_train_two_predictions.tsv
+│   ├── combined_all_val_one_predictions.tsv
+│   ├── combined_all_val_two_predictions.tsv
+│   ├── combined_pollen_train_one_predictions.tsv
+│   ├── combined_pollen_train_two_predictions.tsv
+│   ├── combined_pollen_val_one_predictions.tsv
+│   ├── combined_pollen_val_two_predictions.tsv
+│   ├── combined_tube_tip_train_one_predictions.tsv
+│   ├── combined_tube_tip_train_two_predictions.tsv
+│   ├── combined_tube_tip_val_one_predictions.tsv
+│   ├── combined_tube_tip_val_two_predictions.tsv
+│   ├── one_all_train_one_predictions.tsv
+│   ├── one_all_val_one_predictions.tsv
+│   ├── one_pollen_train_one_predictions.tsv
+│   ├── one_pollen_val_one_predictions.tsv
+│   ├── one_tube_tip_train_one_predictions.tsv
+│   ├── one_tube_tip_val_one_predictions.tsv
+│   ├── two_all_train_two_predictions.tsv
+│   ├── two_all_val_two_predictions.tsv
+│   ├── two_pollen_train_two_predictions.tsv
+│   ├── two_pollen_val_two_predictions.tsv
+│   ├── two_tube_tip_train_two_predictions.tsv
+│   └── two_tube_tip_val_two_predictions.tsv
+├── model_ground_truth/
+│   ├── ground_truth_combined_all_train.tsv
+│   ├── ground_truth_combined_all_val.tsv
+│   ├── ground_truth_one_all_train.tsv
+│   ├── ground_truth_one_all_val.tsv
+│   ├── ground_truth_two_all_train.tsv
+│   └── ground_truth_two_all_val.tsv
+└── model_training_tensorboard/
+    └── (CSV files exported from TensorBoard, one per camera × bounding box type × metric × train/eval combination)
+```
+
+The `data/processed_data/` directory is generated automatically by running `R/process_cv_data.R` and does not need to be downloaded.
+
 ## Dependencies
 
 All scripts require R with the following packages: `dplyr`, `tidyr`, `ggplot2`, `patchwork`, `stringr`. Additional packages used by specific scripts: `car`, `emmeans` (`run_statistics_on_cv_data.R`), `googlesheets4`, `purrr` (scripts that access accession metadata from Google Sheets).

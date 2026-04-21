@@ -395,3 +395,7 @@ make_single_accession_density_plot("CW0000", "34", col_34,
                                    "Heinz tube growth speed at 34 \u00baC")
 make_single_accession_density_plot("CW0002", "34", col_34,
                                    "Tamaulipas tube growth speed at 34 \u00baC")
+make_single_accession_density_plot("CW0000", "26", col_26,
+                                   "Heinz tube growth speed at 26 \u00baC")
+make_single_accession_density_plot("CW0002", "26", col_26,
+                                   "Tamaulipas tube growth speed at 26 \u00baC")

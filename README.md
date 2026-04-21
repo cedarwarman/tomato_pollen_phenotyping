@@ -24,6 +24,10 @@ Generates manuscript figures for pollen tube length and tube growth speed phenot
 
 Validates model accuracy by comparing bounding box predictions against hand-counted ground truth. Reads ground truth counts from `data/model_ground_truth/` and model predictions from `data/model_predictions/`. Computes optimal confidence score thresholds by maximizing r-squared on the training set, then evaluates the selected thresholds on the validation set. Produces confidence threshold plots and ground truth vs. prediction scatter plots. Writes figures to `plots/confidence_threshold_optimization/` and `plots/ground_truth_vs_model_predictions/`.
 
+### `R/map_accessions.R`
+
+Maps the geographic range of diversity panel accessions by species. Reads accession metadata (names, GPS coordinates, species) from Google Sheets, filters to entries with known coordinates, and writes the coordinate table to `data/gps_coordinate_output/accession_coordinates.tsv`. Plots accession locations on a base map coloured by species and writes the figure to `plots/mapping/range_by_species_map.png`.
+
 ### `R/model_training_metrics.R`
 
 Generates supplemental figures summarizing model training and selection. Reads TensorBoard training logs from `data/model_training_tensorboard/` and ground truth/prediction files from `data/model_ground_truth/` and `data/model_predictions/`. Produces three figures: (A) a dot plot comparing validation accuracy between models trained on individual cameras vs. both cameras combined, (B) training loss/mAP/recall and combined optimization score over training steps for the combined-camera model, and (C) r-squared vs. confidence threshold for the combined-camera all-classes model on the training set. Writes figures to `plots/model_training_metrics/`.
@@ -76,6 +80,8 @@ The `data/processed_data/` directory is generated automatically by running `R/pr
 
 ## Dependencies
 
-All scripts require R with the following packages: `dplyr`, `tidyr`, `ggplot2`, `patchwork`, `stringr`. Additional packages used by specific scripts: `car`, `emmeans` (`run_statistics_on_cv_data.R`), `googlesheets4`, `purrr` (scripts that access accession metadata from Google Sheets).
+All scripts require R with the following packages: `dplyr`, `tidyr`, `ggplot2`, `patchwork`, `stringr`. Additional packages used by specific scripts: `car`, `emmeans` (`run_statistics_on_cv_data.R`); `ggmap` >= 4.0 (`map_accessions.R`); `googlesheets4`, `purrr` (scripts that access accession metadata from Google Sheets).
 
-Scripts that read from Google Sheets (`process_cv_data.R`, `plot_classes_over_time.R`, `run_statistics_on_cv_data.R`, `tube_lengths.R`) require a Google service account key at `~/.credentials/google_sheets_api/service_account.json`.
+Scripts that read from Google Sheets (`process_cv_data.R`, `plot_classes_over_time.R`, `run_statistics_on_cv_data.R`, `tube_lengths.R`, `map_accessions.R`) require a Google service account key at `~/.credentials/google_sheets_api/service_account.json`.
+
+`map_accessions.R` uses Stadia Maps for base map tiles (Stamen tiles were migrated to Stadia in 2023). Register a free API key at <https://client.stadiamaps.com/signup/> and store it with `register_stadiamaps("YOUR-API-KEY", write = TRUE)` — this writes the key to `~/.Renviron` so it persists across sessions.

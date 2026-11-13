@@ -133,6 +133,26 @@ pollen_inference %>%
   ) %>%
   make_burst_date_plot("Bursting by date at 34 ºC")
 
+# Linear fit drawn on the bursting-by-date plots (one line across both cameras).
+# R-squared is reported by summary().
+lm_burst_date_26C <- pollen_inference %>%
+  filter(
+    object_class == "burst",
+    time == 80,
+    temp_target == 26
+  ) %>%
+  lm(percentage ~ days_since_start, data = .)
+summary(lm_burst_date_26C)
+
+lm_burst_date_34C <- pollen_inference %>%
+  filter(
+    object_class == "burst",
+    time == 80,
+    temp_target == 34
+  ) %>%
+  lm(percentage ~ days_since_start, data = .)
+summary(lm_burst_date_34C)
+
 
 # Randomly selecting Heinz reps -------------------------------------------
 # Heinz controls were run throughout the experiment. Here I randomly select 
@@ -1226,6 +1246,18 @@ percentage_ratios
 
 tube_length_ratio_data[tube_length_ratio_data$accession == "CW0000", ]$ratio
 tube_length_ratio_data[tube_length_ratio_data$accession == "CW0002", ]$ratio
+
+# One-sample z-tests: H0 is that the 34/26 tube-length ratio equals 1.
+# z uses the delta-method standard error already stored in ratio_se.
+tube_length_ratio_z_tests <- tube_length_ratio_data %>%
+  filter(accession %in% c("CW0000", "CW0002")) %>%
+  mutate(
+    name = ifelse(accession == "CW0000", "Heinz", "Tamaulipas"),
+    z = (ratio - 1) / ratio_se,
+    p_value = 2 * pnorm(abs(z), lower.tail = FALSE)
+  ) %>%
+  select(accession, name, ratio, ratio_se, z, p_value)
+tube_length_ratio_z_tests
 
 # # SE quality control, looking at CW1004 to make sure everything is working properly.
 # tube_length_data %>%

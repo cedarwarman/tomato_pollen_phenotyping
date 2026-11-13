@@ -151,43 +151,97 @@ tube_length_ratio_data <- tube_length_data %>%
     ratio = mean_tube_length_val[temp_target == 34] /
             mean_tube_length_val[temp_target == 26],
     .groups = "drop"
-  )
+  ) %>%
+  mutate(accession = reorder(accession, ratio))
 
-ggplot(tube_length_ratio_data,
-       aes(x = reorder(accession, ratio), y = ratio)) +
-  geom_hline(yintercept = 1, linewidth = 1, linetype = 2, color = "gray") +
-  geom_point(size = 1.5, color = "black") +
-  labs(title = "Ratio of mean pollen tube lengths by accession at 26 and 34 \u00baC",
-       x = "Accession",
-       y = "Ratio (34/26 \u00baC)") +
-  scale_y_continuous(breaks = seq(0.7, 1.2, 0.1),
-                     labels = seq(0.7, 1.2, 0.1),
-                     limits = c(0.7, 1.2),
-                     expand = c(0, 0)) +
+ratio_accession_levels <- levels(tube_length_ratio_data$accession)
+ratio_point_size <- 1.5
+ratio_ref_point_size <- 5
+ratio_ref_stroke <- 1.6
+ratio_line_width <- 1
+
+ratio_plot_theme <- function() {
   theme_bw() +
-  theme(
-    axis.title        = element_text(size = 22, face = "bold"),
-    axis.title.y      = element_text(margin = margin(0, 11, 0, 0)),
-    axis.text         = element_text(size = 18, face = "bold", color = "black"),
-    axis.text.x       = element_blank(),
-    plot.title        = element_text(size = 26, face = "bold", margin = margin(0, 0, 10, 0)),
-    panel.border      = element_blank(),
-    axis.line         = element_line(linewidth = 1, color = "black"),
-    axis.ticks        = element_line(linewidth = 1, color = "black"),
-    axis.ticks.length = unit(8, "pt"),
-    axis.ticks.x      = element_blank(),
-    plot.margin       = margin(0.5, 0.5, 0.5, 0.5, "cm"),
-    panel.grid        = element_blank(),
-    legend.position   = "none"
-  )
+    theme(
+      axis.title        = element_text(size = 22, face = "bold"),
+      axis.title.y      = element_text(margin = margin(0, 11, 0, 0)),
+      axis.text         = element_text(size = 18, face = "bold", color = "black"),
+      axis.text.x       = element_blank(),
+      plot.title        = element_text(size = 26, face = "bold", margin = margin(0, 0, 10, 0)),
+      panel.border      = element_blank(),
+      axis.line         = element_line(linewidth = ratio_line_width, color = "black"),
+      axis.ticks        = element_line(linewidth = ratio_line_width, color = "black"),
+      axis.ticks.length = unit(8, "pt"),
+      axis.ticks.x      = element_blank(),
+      plot.margin       = margin(0.5, 0.5, 0.5, 0.5, "cm"),
+      panel.grid        = element_blank(),
+      legend.position   = "none"
+    )
+}
+
+ratio_plot_title <- "Ratio of mean pollen tube lengths by accession at 26 and 34 \u00baC"
+
+add_ratio_plot_furniture <- function(p) {
+  p +
+    labs(title = ratio_plot_title,
+         x = "Accession",
+         y = "Ratio (34/26 \u00baC)") +
+    scale_x_discrete(limits = ratio_accession_levels, drop = FALSE) +
+    scale_y_continuous(breaks = seq(0.7, 1.2, 0.1),
+                       labels = seq(0.7, 1.2, 0.1),
+                       limits = c(0.7, 1.2),
+                       expand = c(0, 0)) +
+    ratio_plot_theme()
+}
+
+(
+  ggplot(tube_length_ratio_data, aes(x = accession, y = ratio)) +
+    geom_hline(yintercept = 1, linewidth = ratio_line_width, linetype = 2, color = "gray") +
+    geom_point(size = ratio_point_size, color = "black")
+) %>%
+  add_ratio_plot_furniture()
 
 ggsave(
-  filename = file.path(plot_dir, "Ratio of mean pollen tube lengths by accession at 26 and 34 \u00baC.png"),
+  filename = file.path(plot_dir, paste0(ratio_plot_title, ".png")),
   device   = "png",
   width    = 12,
   height   = 6,
   dpi      = 400,
   units    = "in"
+)
+
+# Plot 3b: same as Plot 3; Heinz (CW0000) and Tamaulipas (CW0002) marked --------
+ref_accessions <- c("CW0000", "CW0002")
+ratio_plot_others <- tube_length_ratio_data %>%
+  filter(!as.character(accession) %in% ref_accessions)
+
+(
+  ggplot(tube_length_ratio_data, aes(x = accession, y = ratio)) +
+    geom_hline(yintercept = 1, linewidth = ratio_line_width, linetype = 2, color = "gray") +
+    geom_point(data = ratio_plot_others, size = ratio_point_size, color = "black") +
+    geom_point(
+      data = tube_length_ratio_data %>% filter(as.character(accession) == "CW0000"),
+      shape = 24, size = ratio_ref_point_size, fill = "white", color = "black",
+      stroke = ratio_ref_stroke
+    ) +
+    geom_point(
+      data = tube_length_ratio_data %>% filter(as.character(accession) == "CW0002"),
+      shape = 21, size = ratio_ref_point_size, fill = "white", color = "black",
+      stroke = ratio_ref_stroke
+    )
+) %>%
+  add_ratio_plot_furniture()
+
+ggsave(
+  filename = file.path(
+    plot_dir,
+    paste0(ratio_plot_title, " (Heinz and Tamaulipas highlighted).png")
+  ),
+  device = "png",
+  width  = 12,
+  height = 6,
+  dpi    = 400,
+  units  = "in"
 )
 
 
@@ -337,7 +391,7 @@ make_speed_by_accession_plot <- function(temp_string, line_color, title_string) 
   ggsave(
     filename = file.path(plot_dir, paste0(title_string, ".png")),
     device   = "png",
-    width    = 7.5,
+    width    = 10,
     height   = 7,
     dpi      = 400,
     units    = "in"

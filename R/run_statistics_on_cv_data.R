@@ -939,6 +939,44 @@ export_absolute_burst_integral %>%
   filter(accession == "CW0002") %>%
   select(adjusted_integral_increase)
 
+# Heinz (CW0000) vs Tamaulipas (CW0002) on the adjusted burst-integral means.
+# Each temperature contrast is a t-test of the ANCOVA least-squares means
+# (day-of-year held constant, residual variance pooled across accessions).
+# The increase contrast is the difference of those two contrasts. The
+# temperatures are separate models, so its df is the Satterthwaite approximation.
+heinz_vs_tamaulipas_contrast <- function(model) {
+  emm <- emmeans(
+    model,
+    ~ accession,
+    at = list(accession = c("CW0000", "CW0002"))
+  )
+  contrast(emm, method = list(`Heinz - Tamaulipas` = c(1, -1)))
+}
+
+burst_integral_heinz_vs_tamaulipas_26C <- heinz_vs_tamaulipas_contrast(ancova_burst_integral_26C)
+burst_integral_heinz_vs_tamaulipas_34C <- heinz_vs_tamaulipas_contrast(ancova_burst_integral_34C)
+burst_integral_heinz_vs_tamaulipas_26C
+burst_integral_heinz_vs_tamaulipas_34C
+
+contrast_26 <- summary(burst_integral_heinz_vs_tamaulipas_26C)
+contrast_34 <- summary(burst_integral_heinz_vs_tamaulipas_34C)
+increase_estimate <- contrast_34$estimate - contrast_26$estimate
+increase_se <- sqrt(contrast_34$SE^2 + contrast_26$SE^2)
+increase_df <- (contrast_34$SE^2 + contrast_26$SE^2)^2 /
+  (contrast_34$SE^4 / contrast_34$df + contrast_26$SE^4 / contrast_26$df)
+increase_t <- increase_estimate / increase_se
+increase_p <- 2 * pt(-abs(increase_t), increase_df)
+
+burst_integral_heinz_vs_tamaulipas_increase <- data.frame(
+  contrast = "Heinz - Tamaulipas",
+  estimate = increase_estimate,
+  SE = increase_se,
+  df = increase_df,
+  t.ratio = increase_t,
+  p.value = increase_p
+)
+burst_integral_heinz_vs_tamaulipas_increase
+
 # Plotting adjusted burst integral by accession (sorted by adjusted mean) ---
 # Uses ANCOVA lsmeans (adjusted mean ± SE) rather than raw per-rep values, so
 # accession means are comparable after removing the day-of-year confound.
